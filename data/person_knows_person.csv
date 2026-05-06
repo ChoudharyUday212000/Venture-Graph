@@ -1,0 +1,17 @@
+person1_id,person2_id,strength
+P1,P2,medium
+P2,P9,strong
+P3,P10,medium
+P4,P11,medium
+P5,P11,strong
+P6,P12,weak
+P7,P15,medium
+P8,P19,strong
+P9,P10,strong
+P10,P12,medium
+P11,P14,weak
+P13,P15,medium
+P16,P20,medium
+P17,P1,weak
+P18,P14,medium
+P19,P8,strong

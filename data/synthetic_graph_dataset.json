@@ -1,0 +1,910 @@
+{
+  "schema": {
+    "version": "1.0",
+    "description": "Synthetic starter graph package for testing Neo4j with private-markets style entities and multi-hop traversals.",
+    "node_labels": {
+      "Company": {
+        "primary_key": "company_id",
+        "properties": [
+          "company_id",
+          "name",
+          "sector",
+          "stage",
+          "country"
+        ]
+      },
+      "Investor": {
+        "primary_key": "investor_id",
+        "properties": [
+          "investor_id",
+          "name",
+          "investor_type",
+          "hq_country"
+        ]
+      },
+      "Fund": {
+        "primary_key": "fund_id",
+        "properties": [
+          "fund_id",
+          "name",
+          "vintage",
+          "strategy"
+        ]
+      },
+      "Person": {
+        "primary_key": "person_id",
+        "properties": [
+          "person_id",
+          "name",
+          "role"
+        ]
+      },
+      "Sector": {
+        "primary_key": "sector_name",
+        "properties": [
+          "sector_name"
+        ]
+      },
+      "Location": {
+        "primary_key": "location_name",
+        "properties": [
+          "location_name"
+        ]
+      }
+    },
+    "relationship_types": {
+      "MANAGES": {
+        "from": "Investor",
+        "to": "Fund",
+        "properties": []
+      },
+      "COMMITTED_TO": {
+        "from": "Investor",
+        "to": "Fund",
+        "properties": [
+          "commitment_usd",
+          "year"
+        ]
+      },
+      "INVESTED_IN": {
+        "from": "Fund",
+        "to": "Company",
+        "properties": [
+          "round",
+          "year",
+          "amount_usd"
+        ]
+      },
+      "WORKS_AT": {
+        "from": "Person",
+        "to": "Company",
+        "properties": [
+          "title"
+        ]
+      },
+      "WORKS_FOR": {
+        "from": "Person",
+        "to": "Investor",
+        "properties": [
+          "title"
+        ]
+      },
+      "BOARD_MEMBER_OF": {
+        "from": "Person",
+        "to": "Company",
+        "properties": [
+          "since_year"
+        ]
+      },
+      "KNOWS": {
+        "from": "Person",
+        "to": "Person",
+        "properties": [
+          "strength"
+        ]
+      },
+      "OPERATES_IN": {
+        "from": "Company",
+        "to": "Sector",
+        "properties": []
+      },
+      "LOCATED_IN": {
+        "from": "Company",
+        "to": "Location",
+        "properties": []
+      }
+    }
+  },
+  "nodes": {
+    "companies": [
+      {
+        "company_id": "C1",
+        "name": "Company C1",
+        "sector": "Fintech",
+        "stage": "Seed",
+        "country": "India"
+      },
+      {
+        "company_id": "C2",
+        "name": "Company C2",
+        "sector": "SaaS",
+        "stage": "Series A",
+        "country": "India"
+      },
+      {
+        "company_id": "C3",
+        "name": "Company C3",
+        "sector": "Healthtech",
+        "stage": "Series B",
+        "country": "Singapore"
+      },
+      {
+        "company_id": "C4",
+        "name": "Company C4",
+        "sector": "Climate",
+        "stage": "Series A",
+        "country": "India"
+      },
+      {
+        "company_id": "C5",
+        "name": "Company C5",
+        "sector": "Deeptech",
+        "stage": "Seed",
+        "country": "UAE"
+      },
+      {
+        "company_id": "C6",
+        "name": "Company C6",
+        "sector": "Consumer",
+        "stage": "Series C",
+        "country": "India"
+      },
+      {
+        "company_id": "C7",
+        "name": "Company C7",
+        "sector": "Logistics",
+        "stage": "Series B",
+        "country": "Indonesia"
+      },
+      {
+        "company_id": "C8",
+        "name": "Company C8",
+        "sector": "AI",
+        "stage": "Series A",
+        "country": "India"
+      },
+      {
+        "company_id": "C9",
+        "name": "Company C9",
+        "sector": "Edtech",
+        "stage": "Seed",
+        "country": "India"
+      },
+      {
+        "company_id": "C10",
+        "name": "Company C10",
+        "sector": "Cybersecurity",
+        "stage": "Series B",
+        "country": "Singapore"
+      }
+    ],
+    "investors": [
+      {
+        "investor_id": "I1",
+        "name": "Investor I1",
+        "investor_type": "GP",
+        "hq_country": "India"
+      },
+      {
+        "investor_id": "I2",
+        "name": "Investor I2",
+        "investor_type": "GP",
+        "hq_country": "Singapore"
+      },
+      {
+        "investor_id": "I3",
+        "name": "Investor I3",
+        "investor_type": "GP",
+        "hq_country": "UAE"
+      },
+      {
+        "investor_id": "I4",
+        "name": "Investor I4",
+        "investor_type": "GP",
+        "hq_country": "India"
+      },
+      {
+        "investor_id": "I5",
+        "name": "Investor I5",
+        "investor_type": "LP",
+        "hq_country": "India"
+      },
+      {
+        "investor_id": "I6",
+        "name": "Investor I6",
+        "investor_type": "LP",
+        "hq_country": "UAE"
+      },
+      {
+        "investor_id": "I7",
+        "name": "Investor I7",
+        "investor_type": "LP",
+        "hq_country": "Singapore"
+      },
+      {
+        "investor_id": "I8",
+        "name": "Investor I8",
+        "investor_type": "LP",
+        "hq_country": "India"
+      }
+    ],
+    "funds": [
+      {
+        "fund_id": "F1",
+        "name": "Fund F1",
+        "vintage": 2021,
+        "strategy": "Early Stage VC"
+      },
+      {
+        "fund_id": "F2",
+        "name": "Fund F2",
+        "vintage": 2022,
+        "strategy": "Growth VC"
+      },
+      {
+        "fund_id": "F3",
+        "name": "Fund F3",
+        "vintage": 2020,
+        "strategy": "Sector Focused VC"
+      },
+      {
+        "fund_id": "F4",
+        "name": "Fund F4",
+        "vintage": 2023,
+        "strategy": "Seed VC"
+      },
+      {
+        "fund_id": "F5",
+        "name": "Fund F5",
+        "vintage": 2021,
+        "strategy": "Cross-border VC"
+      },
+      {
+        "fund_id": "F6",
+        "name": "Fund F6",
+        "vintage": 2024,
+        "strategy": "Opportunity Fund"
+      }
+    ],
+    "people": [
+      {
+        "person_id": "P1",
+        "name": "Person P1",
+        "role": "Founder"
+      },
+      {
+        "person_id": "P2",
+        "name": "Person P2",
+        "role": "CEO"
+      },
+      {
+        "person_id": "P3",
+        "name": "Person P3",
+        "role": "CTO"
+      },
+      {
+        "person_id": "P4",
+        "name": "Person P4",
+        "role": "COO"
+      },
+      {
+        "person_id": "P5",
+        "name": "Person P5",
+        "role": "Founder"
+      },
+      {
+        "person_id": "P6",
+        "name": "Person P6",
+        "role": "CFO"
+      },
+      {
+        "person_id": "P7",
+        "name": "Person P7",
+        "role": "VP Sales"
+      },
+      {
+        "person_id": "P8",
+        "name": "Person P8",
+        "role": "Chief Scientist"
+      },
+      {
+        "person_id": "P9",
+        "name": "Person P9",
+        "role": "Managing Partner"
+      },
+      {
+        "person_id": "P10",
+        "name": "Person P10",
+        "role": "Partner"
+      },
+      {
+        "person_id": "P11",
+        "name": "Person P11",
+        "role": "Principal"
+      },
+      {
+        "person_id": "P12",
+        "name": "Person P12",
+        "role": "Associate"
+      },
+      {
+        "person_id": "P13",
+        "name": "Person P13",
+        "role": "Operating Partner"
+      },
+      {
+        "person_id": "P14",
+        "name": "Person P14",
+        "role": "Board Observer"
+      },
+      {
+        "person_id": "P15",
+        "name": "Person P15",
+        "role": "LP Advisor"
+      },
+      {
+        "person_id": "P16",
+        "name": "Person P16",
+        "role": "Investment Director"
+      },
+      {
+        "person_id": "P17",
+        "name": "Person P17",
+        "role": "Founder"
+      },
+      {
+        "person_id": "P18",
+        "name": "Person P18",
+        "role": "CEO"
+      },
+      {
+        "person_id": "P19",
+        "name": "Person P19",
+        "role": "Partner"
+      },
+      {
+        "person_id": "P20",
+        "name": "Person P20",
+        "role": "Analyst"
+      }
+    ],
+    "sectors": [
+      {
+        "sector_name": "AI"
+      },
+      {
+        "sector_name": "Climate"
+      },
+      {
+        "sector_name": "Consumer"
+      },
+      {
+        "sector_name": "Cybersecurity"
+      },
+      {
+        "sector_name": "Deeptech"
+      },
+      {
+        "sector_name": "Edtech"
+      },
+      {
+        "sector_name": "Fintech"
+      },
+      {
+        "sector_name": "Healthtech"
+      },
+      {
+        "sector_name": "Logistics"
+      },
+      {
+        "sector_name": "SaaS"
+      }
+    ],
+    "locations": [
+      {
+        "location_name": "India"
+      },
+      {
+        "location_name": "Indonesia"
+      },
+      {
+        "location_name": "Singapore"
+      },
+      {
+        "location_name": "UAE"
+      }
+    ]
+  },
+  "relationships": {
+    "investor_manages_fund": [
+      {
+        "investor_id": "I1",
+        "fund_id": "F1"
+      },
+      {
+        "investor_id": "I1",
+        "fund_id": "F2"
+      },
+      {
+        "investor_id": "I2",
+        "fund_id": "F3"
+      },
+      {
+        "investor_id": "I3",
+        "fund_id": "F4"
+      },
+      {
+        "investor_id": "I4",
+        "fund_id": "F5"
+      },
+      {
+        "investor_id": "I4",
+        "fund_id": "F6"
+      }
+    ],
+    "lp_commits_fund": [
+      {
+        "lp_investor_id": "I5",
+        "fund_id": "F1",
+        "commitment_usd": 12000000,
+        "year": 2021
+      },
+      {
+        "lp_investor_id": "I5",
+        "fund_id": "F3",
+        "commitment_usd": 8000000,
+        "year": 2020
+      },
+      {
+        "lp_investor_id": "I6",
+        "fund_id": "F2",
+        "commitment_usd": 15000000,
+        "year": 2022
+      },
+      {
+        "lp_investor_id": "I6",
+        "fund_id": "F5",
+        "commitment_usd": 9000000,
+        "year": 2021
+      },
+      {
+        "lp_investor_id": "I7",
+        "fund_id": "F4",
+        "commitment_usd": 7000000,
+        "year": 2023
+      },
+      {
+        "lp_investor_id": "I7",
+        "fund_id": "F6",
+        "commitment_usd": 11000000,
+        "year": 2024
+      },
+      {
+        "lp_investor_id": "I8",
+        "fund_id": "F1",
+        "commitment_usd": 6000000,
+        "year": 2021
+      },
+      {
+        "lp_investor_id": "I8",
+        "fund_id": "F2",
+        "commitment_usd": 5000000,
+        "year": 2022
+      }
+    ],
+    "fund_invested_in_company": [
+      {
+        "fund_id": "F1",
+        "company_id": "C1",
+        "round": "Seed",
+        "year": 2022,
+        "amount_usd": 1500000
+      },
+      {
+        "fund_id": "F1",
+        "company_id": "C2",
+        "round": "Series A",
+        "year": 2023,
+        "amount_usd": 4000000
+      },
+      {
+        "fund_id": "F1",
+        "company_id": "C8",
+        "round": "Series A",
+        "year": 2024,
+        "amount_usd": 3500000
+      },
+      {
+        "fund_id": "F2",
+        "company_id": "C3",
+        "round": "Series B",
+        "year": 2024,
+        "amount_usd": 9000000
+      },
+      {
+        "fund_id": "F2",
+        "company_id": "C6",
+        "round": "Series C",
+        "year": 2024,
+        "amount_usd": 12000000
+      },
+      {
+        "fund_id": "F3",
+        "company_id": "C4",
+        "round": "Series A",
+        "year": 2022,
+        "amount_usd": 5000000
+      },
+      {
+        "fund_id": "F3",
+        "company_id": "C7",
+        "round": "Series B",
+        "year": 2023,
+        "amount_usd": 7000000
+      },
+      {
+        "fund_id": "F4",
+        "company_id": "C5",
+        "round": "Seed",
+        "year": 2024,
+        "amount_usd": 2000000
+      },
+      {
+        "fund_id": "F4",
+        "company_id": "C9",
+        "round": "Seed",
+        "year": 2024,
+        "amount_usd": 1800000
+      },
+      {
+        "fund_id": "F5",
+        "company_id": "C2",
+        "round": "Series A",
+        "year": 2023,
+        "amount_usd": 2500000
+      },
+      {
+        "fund_id": "F5",
+        "company_id": "C10",
+        "round": "Series B",
+        "year": 2025,
+        "amount_usd": 8000000
+      },
+      {
+        "fund_id": "F6",
+        "company_id": "C8",
+        "round": "Series A Extension",
+        "year": 2025,
+        "amount_usd": 4500000
+      },
+      {
+        "fund_id": "F6",
+        "company_id": "C3",
+        "round": "Series B Extension",
+        "year": 2025,
+        "amount_usd": 6000000
+      }
+    ],
+    "person_works_at_company": [
+      {
+        "person_id": "P1",
+        "company_id": "C1",
+        "title": "Founder"
+      },
+      {
+        "person_id": "P2",
+        "company_id": "C2",
+        "title": "CEO"
+      },
+      {
+        "person_id": "P3",
+        "company_id": "C3",
+        "title": "CTO"
+      },
+      {
+        "person_id": "P4",
+        "company_id": "C4",
+        "title": "COO"
+      },
+      {
+        "person_id": "P5",
+        "company_id": "C5",
+        "title": "Founder"
+      },
+      {
+        "person_id": "P6",
+        "company_id": "C6",
+        "title": "CFO"
+      },
+      {
+        "person_id": "P7",
+        "company_id": "C7",
+        "title": "VP Sales"
+      },
+      {
+        "person_id": "P8",
+        "company_id": "C8",
+        "title": "Chief Scientist"
+      },
+      {
+        "person_id": "P17",
+        "company_id": "C9",
+        "title": "Founder"
+      },
+      {
+        "person_id": "P18",
+        "company_id": "C10",
+        "title": "CEO"
+      }
+    ],
+    "person_works_for_investor": [
+      {
+        "person_id": "P9",
+        "investor_id": "I1",
+        "title": "Managing Partner"
+      },
+      {
+        "person_id": "P10",
+        "investor_id": "I2",
+        "title": "Partner"
+      },
+      {
+        "person_id": "P11",
+        "investor_id": "I3",
+        "title": "Principal"
+      },
+      {
+        "person_id": "P12",
+        "investor_id": "I4",
+        "title": "Associate"
+      },
+      {
+        "person_id": "P13",
+        "investor_id": "I5",
+        "title": "Operating Partner"
+      },
+      {
+        "person_id": "P14",
+        "investor_id": "I6",
+        "title": "Board Observer"
+      },
+      {
+        "person_id": "P15",
+        "investor_id": "I7",
+        "title": "LP Advisor"
+      },
+      {
+        "person_id": "P16",
+        "investor_id": "I8",
+        "title": "Investment Director"
+      },
+      {
+        "person_id": "P19",
+        "investor_id": "I1",
+        "title": "Partner"
+      },
+      {
+        "person_id": "P20",
+        "investor_id": "I4",
+        "title": "Analyst"
+      }
+    ],
+    "person_board_member_company": [
+      {
+        "person_id": "P9",
+        "company_id": "C2",
+        "since_year": 2023
+      },
+      {
+        "person_id": "P10",
+        "company_id": "C4",
+        "since_year": 2022
+      },
+      {
+        "person_id": "P11",
+        "company_id": "C5",
+        "since_year": 2024
+      },
+      {
+        "person_id": "P12",
+        "company_id": "C8",
+        "since_year": 2025
+      },
+      {
+        "person_id": "P19",
+        "company_id": "C1",
+        "since_year": 2022
+      },
+      {
+        "person_id": "P14",
+        "company_id": "C10",
+        "since_year": 2025
+      }
+    ],
+    "person_knows_person": [
+      {
+        "person1_id": "P1",
+        "person2_id": "P2",
+        "strength": "medium"
+      },
+      {
+        "person1_id": "P2",
+        "person2_id": "P9",
+        "strength": "strong"
+      },
+      {
+        "person1_id": "P3",
+        "person2_id": "P10",
+        "strength": "medium"
+      },
+      {
+        "person1_id": "P4",
+        "person2_id": "P11",
+        "strength": "medium"
+      },
+      {
+        "person1_id": "P5",
+        "person2_id": "P11",
+        "strength": "strong"
+      },
+      {
+        "person1_id": "P6",
+        "person2_id": "P12",
+        "strength": "weak"
+      },
+      {
+        "person1_id": "P7",
+        "person2_id": "P15",
+        "strength": "medium"
+      },
+      {
+        "person1_id": "P8",
+        "person2_id": "P19",
+        "strength": "strong"
+      },
+      {
+        "person1_id": "P9",
+        "person2_id": "P10",
+        "strength": "strong"
+      },
+      {
+        "person1_id": "P10",
+        "person2_id": "P12",
+        "strength": "medium"
+      },
+      {
+        "person1_id": "P11",
+        "person2_id": "P14",
+        "strength": "weak"
+      },
+      {
+        "person1_id": "P13",
+        "person2_id": "P15",
+        "strength": "medium"
+      },
+      {
+        "person1_id": "P16",
+        "person2_id": "P20",
+        "strength": "medium"
+      },
+      {
+        "person1_id": "P17",
+        "person2_id": "P1",
+        "strength": "weak"
+      },
+      {
+        "person1_id": "P18",
+        "person2_id": "P14",
+        "strength": "medium"
+      },
+      {
+        "person1_id": "P19",
+        "person2_id": "P8",
+        "strength": "strong"
+      }
+    ],
+    "company_operates_in_sector": [
+      {
+        "company_id": "C1",
+        "sector_name": "Fintech"
+      },
+      {
+        "company_id": "C2",
+        "sector_name": "SaaS"
+      },
+      {
+        "company_id": "C3",
+        "sector_name": "Healthtech"
+      },
+      {
+        "company_id": "C4",
+        "sector_name": "Climate"
+      },
+      {
+        "company_id": "C5",
+        "sector_name": "Deeptech"
+      },
+      {
+        "company_id": "C6",
+        "sector_name": "Consumer"
+      },
+      {
+        "company_id": "C7",
+        "sector_name": "Logistics"
+      },
+      {
+        "company_id": "C8",
+        "sector_name": "AI"
+      },
+      {
+        "company_id": "C9",
+        "sector_name": "Edtech"
+      },
+      {
+        "company_id": "C10",
+        "sector_name": "Cybersecurity"
+      }
+    ],
+    "company_located_in_location": [
+      {
+        "company_id": "C1",
+        "location_name": "India"
+      },
+      {
+        "company_id": "C2",
+        "location_name": "India"
+      },
+      {
+        "company_id": "C3",
+        "location_name": "Singapore"
+      },
+      {
+        "company_id": "C4",
+        "location_name": "India"
+      },
+      {
+        "company_id": "C5",
+        "location_name": "UAE"
+      },
+      {
+        "company_id": "C6",
+        "location_name": "India"
+      },
+      {
+        "company_id": "C7",
+        "location_name": "Indonesia"
+      },
+      {
+        "company_id": "C8",
+        "location_name": "India"
+      },
+      {
+        "company_id": "C9",
+        "location_name": "India"
+      },
+      {
+        "company_id": "C10",
+        "location_name": "Singapore"
+      }
+    ]
+  },
+  "counts": {
+    "companies": 10,
+    "investors": 8,
+    "funds": 6,
+    "people": 20,
+    "sectors": 10,
+    "locations": 4,
+    "relationships_total": 89
+  }
+}

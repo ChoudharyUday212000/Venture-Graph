@@ -1,0 +1,11 @@
+company_id,name,sector,stage,country
+C1,Company C1,Fintech,Seed,India
+C2,Company C2,SaaS,Series A,India
+C3,Company C3,Healthtech,Series B,Singapore
+C4,Company C4,Climate,Series A,India
+C5,Company C5,Deeptech,Seed,UAE
+C6,Company C6,Consumer,Series C,India
+C7,Company C7,Logistics,Series B,Indonesia
+C8,Company C8,AI,Series A,India
+C9,Company C9,Edtech,Seed,India
+C10,Company C10,Cybersecurity,Series B,Singapore

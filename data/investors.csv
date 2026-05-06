@@ -1,0 +1,9 @@
+investor_id,name,investor_type,hq_country
+I1,Investor I1,GP,India
+I2,Investor I2,GP,Singapore
+I3,Investor I3,GP,UAE
+I4,Investor I4,GP,India
+I5,Investor I5,LP,India
+I6,Investor I6,LP,UAE
+I7,Investor I7,LP,Singapore
+I8,Investor I8,LP,India
