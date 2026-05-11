@@ -1,0 +1,116 @@
+{
+  "version": "1.0",
+  "description": "AI query schema for the existing venture capital Neo4j graph. Relationship naming is normalized for querying.",
+  "node_labels": {
+    "Company": {
+      "primary_key": "company_id",
+      "properties": [
+        "company_id",
+        "name",
+        "sector",
+        "stage",
+        "country"
+      ]
+    },
+    "Investor": {
+      "primary_key": "investor_id",
+      "properties": [
+        "investor_id",
+        "name",
+        "investor_type",
+        "hq_country"
+      ]
+    },
+    "Fund": {
+      "primary_key": "fund_id",
+      "properties": [
+        "fund_id",
+        "name",
+        "vintage",
+        "strategy"
+      ]
+    },
+    "Person": {
+      "primary_key": "person_id",
+      "properties": [
+        "person_id",
+        "name",
+        "role"
+      ]
+    },
+    "Sector": {
+      "primary_key": "sector_name",
+      "properties": [
+        "sector_name"
+      ]
+    },
+    "Location": {
+      "primary_key": "location_name",
+      "properties": [
+        "location_name"
+      ]
+    }
+  },
+  "relationship_types": {
+    "MANAGES": {
+      "from": "Investor",
+      "to": "Fund",
+      "properties": []
+    },
+    "COMMITS_TO": {
+      "from": "Investor",
+      "to": "Fund",
+      "properties": [
+        "commitment_usd",
+        "year"
+      ]
+    },
+    "INVESTED_IN": {
+      "from": "Fund",
+      "to": "Company",
+      "properties": [
+        "round",
+        "year",
+        "amount_usd"
+      ]
+    },
+    "WORKS_AT": {
+      "from": "Person",
+      "to": "Company",
+      "properties": [
+        "title"
+      ]
+    },
+    "WORKS_FOR": {
+      "from": "Person",
+      "to": "Investor",
+      "properties": [
+        "title"
+      ]
+    },
+    "BOARD_MEMBER_OF": {
+      "from": "Person",
+      "to": "Company",
+      "properties": [
+        "since_year"
+      ]
+    },
+    "KNOWS": {
+      "from": "Person",
+      "to": "Person",
+      "properties": [
+        "strength"
+      ]
+    },
+    "OPERATES_IN": {
+      "from": "Company",
+      "to": "Sector",
+      "properties": []
+    },
+    "LOCATED_IN": {
+      "from": "Company",
+      "to": "Location",
+      "properties": []
+    }
+  }
+}

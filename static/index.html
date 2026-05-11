@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Neo4j AI Query Engine</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f6f7f9;
+      color: #1c2430;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+    }
+
+    main {
+      width: min(980px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 36px 0;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 30px;
+      font-weight: 700;
+    }
+
+    .subtitle {
+      margin: 0 0 24px;
+      color: #5d6675;
+    }
+
+    .ask-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    input {
+      min-height: 44px;
+      border: 1px solid #c8ced8;
+      border-radius: 6px;
+      padding: 0 12px;
+      font-size: 16px;
+      background: #ffffff;
+    }
+
+    button {
+      min-height: 44px;
+      border: 0;
+      border-radius: 6px;
+      padding: 0 18px;
+      font-size: 16px;
+      font-weight: 700;
+      color: #ffffff;
+      background: #1666d8;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      background: #8792a2;
+      cursor: wait;
+    }
+
+    section {
+      margin-top: 20px;
+    }
+
+    h2 {
+      margin: 0 0 10px;
+      font-size: 18px;
+    }
+
+    pre {
+      min-height: 52px;
+      margin: 0;
+      overflow: auto;
+      border: 1px solid #d8dde6;
+      border-radius: 6px;
+      padding: 14px;
+      background: #ffffff;
+      font-size: 14px;
+      line-height: 1.45;
+      white-space: pre-wrap;
+    }
+
+    .error {
+      color: #b42318;
+    }
+
+    @media (max-width: 640px) {
+      main {
+        width: min(100% - 24px, 980px);
+        padding-top: 24px;
+      }
+
+      .ask-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Neo4j AI Query Engine</h1>
+    <p class="subtitle">Ask your existing graph in natural language.</p>
+
+    <div class="ask-row">
+      <input id="question" type="text" placeholder="Top investors by portfolio size" autocomplete="off">
+      <button id="askButton" type="button">Ask</button>
+    </div>
+
+    <section>
+      <h2>Generated Cypher</h2>
+      <pre id="cypher">No query yet.</pre>
+    </section>
+
+    <section>
+      <h2>Results</h2>
+      <pre id="result">No results yet.</pre>
+    </section>
+  </main>
+
+  <script>
+    const questionInput = document.getElementById("question");
+    const askButton = document.getElementById("askButton");
+    const cypherOutput = document.getElementById("cypher");
+    const resultOutput = document.getElementById("result");
+
+    async function askQuestion() {
+      const question = questionInput.value.trim();
+      if (!question) {
+        questionInput.focus();
+        return;
+      }
+
+      askButton.disabled = true;
+      askButton.textContent = "Asking";
+      cypherOutput.textContent = "Generating Cypher...";
+      resultOutput.textContent = "Waiting for Neo4j results...";
+      resultOutput.classList.remove("error");
+
+      try {
+        const response = await fetch(`/ask?question=${encodeURIComponent(question)}`);
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.detail || "Request failed");
+        }
+
+        cypherOutput.textContent = data.cypher;
+        resultOutput.textContent = JSON.stringify(data.result, null, 2);
+      } catch (error) {
+        cypherOutput.textContent = "No safe Cypher executed.";
+        resultOutput.textContent = error.message;
+        resultOutput.classList.add("error");
+      } finally {
+        askButton.disabled = false;
+        askButton.textContent = "Ask";
+      }
+    }
+
+    askButton.addEventListener("click", askQuestion);
+    questionInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        askQuestion();
+      }
+    });
+  </script>
+</body>
+</html>

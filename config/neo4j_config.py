@@ -19,7 +19,8 @@ def _load_local_env() -> None:
             if not line or line.startswith("#") or "=" not in line:
                 continue
             key, value = line.split("=", 1)
-            os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
+            key = key.strip().lstrip("\ufeff")
+            os.environ.setdefault(key, value.strip().strip('"').strip("'"))
 
 
 _load_local_env()
