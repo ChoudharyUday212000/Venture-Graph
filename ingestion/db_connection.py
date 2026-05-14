@@ -41,6 +41,8 @@ class Neo4jConnection:
             driver = GraphDatabase.driver(
                 NEO4J_URI,
                 auth=(NEO4J_USERNAME, NEO4J_PASSWORD),
+                connection_timeout=10,
+                connection_acquisition_timeout=10,
             )
             # Test connection
             with driver.session() as session:
@@ -48,7 +50,7 @@ class Neo4jConnection:
             logger.info("[OK] Neo4j connection established successfully")
             return driver
         except Exception as e:
-            logger.error(f"✗ Failed to connect to Neo4j: {str(e)}")
+            logger.error(f"Failed to connect to Neo4j: {str(e)}")
             raise ConnectionException(f"Cannot connect to Neo4j: {str(e)}")
 
     @classmethod

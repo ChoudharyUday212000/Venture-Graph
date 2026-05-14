@@ -33,7 +33,7 @@ def generate_cypher(question: str) -> str:
                 "OPENAI_API_KEY is missing or still has the placeholder value."
             )
 
-        client = OpenAI(api_key=api_key)
+        client = OpenAI(api_key=api_key, timeout=20.0, max_retries=0)
         prompt = _build_prompt(question.strip())
         model = os.getenv("OPENAI_MODEL", DEFAULT_MODEL)
 
@@ -113,5 +113,5 @@ def _load_openai_env() -> None:
 
 
 def _looks_like_placeholder(value: str) -> bool:
-    lowered = value.strip().lower()
-    return lowered.startswith("your_") or "your_openai" in lowered
+    normalized = value.strip().lower().replace("-", "_")
+    return normalized.startswith("your_") or "your_openai" in normalized
