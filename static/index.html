@@ -4,173 +4,1081 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Neo4j AI Query Engine</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
   <style>
+    /* ================================================================
+       DESIGN TOKENS
+    ================================================================ */
     :root {
-      color-scheme: light;
-      font-family: Arial, Helvetica, sans-serif;
-      background: #f6f7f9;
-      color: #1c2430;
+      --bg:           #07090f;
+      --surface:      #0c1018;
+      --card:         rgba(12, 18, 30, 0.88);
+      --card-hover:   rgba(14, 22, 36, 0.95);
+      --code-bg:      #050810;
+      --border:       rgba(99, 179, 237, 0.11);
+      --border-hover: rgba(99, 179, 237, 0.26);
+      --border-focus: rgba(99, 179, 237, 0.55);
+      --txt:          #dde6f5;
+      --txt-2:        #8898b2;
+      --txt-3:        #3f4d60;
+      --blue:         #3b82f6;
+      --blue-l:       #60a5fa;
+      --cyan:         #22d3ee;
+      --purple:       #a78bfa;
+      --green:        #10b981;
+      --red:          #f87171;
+      --amber:        #fbbf24;
+      --r-sm:         8px;
+      --r-md:         12px;
+      --r-lg:         16px;
+      --r-xl:         20px;
+      --shadow:       0 4px 28px rgba(0,0,0,0.6), 0 1px 6px rgba(0,0,0,0.35);
+      --glow-focus:   0 0 0 3px rgba(59,130,246,0.22);
+      --header-h:     58px;
+      --sidebar-w:    236px;
+      --font:         'Inter', system-ui, -apple-system, sans-serif;
+      --mono:         'JetBrains Mono', 'Fira Code', Consolas, monospace;
     }
 
+    /* ================================================================
+       RESET & BASE
+    ================================================================ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { height: 100%; }
     body {
-      margin: 0;
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--txt);
       min-height: 100vh;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+    button { cursor: pointer; font-family: var(--font); }
+
+    /* ================================================================
+       ANIMATED BACKGROUND CANVAS
+    ================================================================ */
+    #bg {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
     }
 
-    main {
-      width: min(980px, calc(100% - 32px));
+    /* ================================================================
+       HEADER
+    ================================================================ */
+    .hdr {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: var(--header-h);
+      z-index: 100;
+      background: rgba(7, 9, 15, 0.78);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+    .hdr-in {
+      max-width: 1440px;
       margin: 0 auto;
-      padding: 36px 0;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
     }
-
-    h1 {
-      margin: 0 0 8px;
-      font-size: 30px;
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .logo-icon { width: 28px; height: 28px; flex-shrink: 0; }
+    .logo-name {
+      font-size: 15px;
       font-weight: 700;
+      letter-spacing: -0.3px;
+      background: linear-gradient(130deg, var(--blue-l) 0%, var(--cyan) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hdr-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      background: rgba(167,139,250,0.08);
+      border: 1px solid rgba(167,139,250,0.2);
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--purple);
+    }
+    .badge-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--purple);
+      animation: pulse-dot 2.6s ease-in-out infinite;
     }
 
-    .subtitle {
-      margin: 0 0 24px;
-      color: #5d6675;
+    /* ================================================================
+       APP SHELL
+    ================================================================ */
+    .shell {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      min-height: 100vh;
+      padding-top: var(--header-h);
     }
 
-    .ask-row {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 12px;
-      margin-bottom: 20px;
+    /* ================================================================
+       SIDEBAR
+    ================================================================ */
+    .sidebar {
+      width: var(--sidebar-w);
+      flex-shrink: 0;
+      position: sticky;
+      top: var(--header-h);
+      height: calc(100vh - var(--header-h));
+      overflow-y: auto;
+      border-right: 1px solid var(--border);
+      padding: 28px 12px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(99,179,237,0.12) transparent;
     }
-
-    input {
-      min-height: 44px;
-      border: 1px solid #c8ced8;
-      border-radius: 6px;
-      padding: 0 12px;
-      font-size: 16px;
-      background: #ffffff;
-    }
-
-    button {
-      min-height: 44px;
-      border: 0;
-      border-radius: 6px;
-      padding: 0 18px;
-      font-size: 16px;
+    .sb-section { margin-bottom: 28px; }
+    .sb-label {
+      font-size: 10px;
       font-weight: 700;
-      color: #ffffff;
-      background: #1666d8;
-      cursor: pointer;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      color: var(--txt-3);
+      padding: 0 10px;
+      margin-bottom: 8px;
+      display: block;
     }
-
-    button:disabled {
-      background: #8792a2;
-      cursor: wait;
-    }
-
-    section {
-      margin-top: 20px;
-    }
-
-    h2 {
-      margin: 0 0 10px;
-      font-size: 18px;
-    }
-
-    pre {
-      min-height: 52px;
-      margin: 0;
-      overflow: auto;
-      border: 1px solid #d8dde6;
-      border-radius: 6px;
-      padding: 14px;
-      background: #ffffff;
-      font-size: 14px;
+    .ex-list { list-style: none; display: flex; flex-direction: column; gap: 1px; }
+    .ex-btn {
+      display: block;
+      width: 100%;
+      text-align: left;
+      padding: 8px 10px;
+      font-size: 12.5px;
+      font-weight: 400;
+      color: var(--txt-2);
+      background: transparent;
+      border: none;
+      border-radius: var(--r-sm);
       line-height: 1.45;
+      transition: color 0.15s, background 0.15s;
+    }
+    .ex-btn:hover {
+      background: rgba(59,130,246,0.07);
+      color: var(--txt);
+    }
+    .ex-btn:hover .ex-arrow { opacity: 0.7; }
+    .ex-arrow {
+      font-size: 11px;
+      color: var(--blue);
+      margin-right: 6px;
+      opacity: 0;
+      transition: opacity 0.15s;
+      display: inline-block;
+    }
+    .sb-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 4px 10px 24px;
+    }
+    .sb-schema {
+      padding: 0 10px;
+    }
+    .schema-tag {
+      display: inline-block;
+      padding: 3px 8px;
+      background: rgba(99,179,237,0.06);
+      border: 1px solid rgba(99,179,237,0.15);
+      border-radius: 5px;
+      font-size: 11px;
+      font-family: var(--mono);
+      color: var(--cyan);
+      margin: 2px 2px 2px 0;
+    }
+
+    /* ================================================================
+       MAIN CONTENT
+    ================================================================ */
+    .main {
+      flex: 1;
+      min-width: 0;
+      padding: 36px 36px 60px;
+    }
+
+    /* ================================================================
+       MOBILE EXAMPLES STRIP
+    ================================================================ */
+    .strip {
+      display: none;
+      gap: 7px;
+      overflow-x: auto;
+      padding-bottom: 20px;
+      scrollbar-width: none;
+    }
+    .strip::-webkit-scrollbar { display: none; }
+    .s-pill {
+      flex-shrink: 0;
+      padding: 6px 13px;
+      background: rgba(59,130,246,0.08);
+      border: 1px solid rgba(59,130,246,0.18);
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--blue-l);
+      white-space: nowrap;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .s-pill:hover {
+      background: rgba(59,130,246,0.14);
+      border-color: rgba(59,130,246,0.38);
+    }
+
+    /* ================================================================
+       INPUT CARD
+    ================================================================ */
+    .input-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--r-xl);
+      padding: 22px;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      box-shadow: var(--shadow);
+      margin-bottom: 22px;
+      transition: border-color 0.2s;
+    }
+    .input-card:focus-within {
+      border-color: var(--border-hover);
+    }
+    .inp-label {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--txt-2);
+      letter-spacing: 0.3px;
+      margin-bottom: 13px;
+    }
+    .inp-label svg { color: var(--cyan); }
+    #question {
+      width: 100%;
+      background: rgba(0,0,0,0.35);
+      border: 1px solid var(--border);
+      border-radius: var(--r-md);
+      padding: 14px 16px;
+      font-size: 15px;
+      color: var(--txt);
+      font-family: var(--font);
+      resize: none;
+      min-height: 80px;
+      max-height: 220px;
+      overflow-y: auto;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      line-height: 1.65;
+    }
+    #question::placeholder { color: var(--txt-3); }
+    #question:focus {
+      border-color: var(--border-focus);
+      box-shadow: var(--glow-focus);
+    }
+    .inp-foot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 13px;
+      gap: 12px;
+    }
+    .inp-hint {
+      font-size: 11.5px;
+      color: var(--txt-3);
+      flex-shrink: 0;
+    }
+    .inp-hint kbd {
+      display: inline-block;
+      padding: 1px 5px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 4px;
+      font-size: 10.5px;
+      font-family: var(--mono);
+      color: var(--txt-3);
+    }
+    #askBtn {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 10px 22px;
+      background: linear-gradient(130deg, var(--blue) 0%, var(--cyan) 100%);
+      border: none;
+      border-radius: var(--r-md);
+      font-size: 14px;
+      font-weight: 600;
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(59,130,246,0.35);
+      transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+      flex-shrink: 0;
+    }
+    #askBtn:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 22px rgba(59,130,246,0.48);
+    }
+    #askBtn:active:not(:disabled) { transform: none; }
+    #askBtn:disabled {
+      opacity: 0.58;
+      cursor: not-allowed;
+    }
+
+    /* ================================================================
+       RESULTS GRID
+    ================================================================ */
+    .results {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    /* ================================================================
+       RESULT CARD
+    ================================================================ */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      overflow: hidden;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      min-height: 190px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .card:hover {
+      border-color: var(--border-hover);
+    }
+    .card-hdr {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 13px 16px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      gap: 10px;
+    }
+    .card-title {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: var(--txt-2);
+    }
+    .card-title svg { color: var(--cyan); flex-shrink: 0; }
+    .card-acts {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    /* Status badge */
+    .status {
+      display: none;
+      align-items: center;
+      gap: 4px;
+      font-size: 10.5px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 12px;
+      letter-spacing: 0.2px;
+    }
+    .status.ok  {
+      display: flex;
+      background: rgba(16,185,129,0.09);
+      color: var(--green);
+      border: 1px solid rgba(16,185,129,0.18);
+    }
+    .status.err {
+      display: flex;
+      background: rgba(248,113,113,0.09);
+      color: var(--red);
+      border: 1px solid rgba(248,113,113,0.22);
+    }
+
+    /* Copy button */
+    .copy-btn {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      font-size: 11.5px;
+      font-weight: 500;
+      color: var(--txt-2);
+      transition: all 0.15s;
+    }
+    .copy-btn:hover {
+      background: rgba(255,255,255,0.08);
+      color: var(--txt);
+      border-color: var(--border-hover);
+    }
+    .copy-btn.copied {
+      color: var(--green);
+      border-color: rgba(16,185,129,0.28);
+    }
+
+    /* Card body */
+    .card-body { flex: 1; overflow: auto; position: relative; }
+
+    /* Code pre */
+    pre.cb {
+      min-height: 155px;
+      margin: 0;
+      padding: 18px;
+      background: var(--code-bg);
+      font-family: var(--mono);
+      font-size: 12.5px;
+      line-height: 1.8;
       white-space: pre-wrap;
+      word-break: break-word;
+      color: #c8d3f5;
+    }
+    .placeholder {
+      color: var(--txt-3);
+      font-style: italic;
+      font-family: var(--font);
+      font-size: 13px;
+    }
+    .err-txt { color: var(--red); }
+
+    /* ================================================================
+       SHIMMER LOADING
+    ================================================================ */
+    .shim-wrap {
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+      padding: 18px;
+      background: var(--code-bg);
+      min-height: 155px;
+    }
+    .shim-line {
+      height: 12px;
+      border-radius: 4px;
+      background: linear-gradient(
+        90deg,
+        rgba(255,255,255,0.025) 0%,
+        rgba(255,255,255,0.07)  50%,
+        rgba(255,255,255,0.025) 100%
+      );
+      background-size: 600px 100%;
+      animation: shimmer 1.65s linear infinite;
     }
 
-    .error {
-      color: #b42318;
+    /* ================================================================
+       SPINNER
+    ================================================================ */
+    .spin {
+      display: inline-block;
+      width: 13px; height: 13px;
+      border: 2px solid rgba(255,255,255,0.22);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin-anim 0.7s linear infinite;
+      flex-shrink: 0;
     }
 
-    @media (max-width: 640px) {
-      main {
-        width: min(100% - 24px, 980px);
-        padding-top: 24px;
-      }
+    /* ================================================================
+       CYPHER SYNTAX COLORS
+    ================================================================ */
+    .ck  { color: #c792ea; font-weight: 600; }   /* keyword     */
+    .cl  { color: #82aaff; }                      /* label/type  */
+    .cs  { color: #c3e88d; }                      /* string      */
+    .cn  { color: #f78c6c; }                      /* number      */
+    .cp  { color: #89ddff; }                      /* property    */
+    .cc  { color: #3d4f62; font-style: italic; }  /* comment     */
 
-      .ask-row {
-        grid-template-columns: 1fr;
-      }
+    /* JSON SYNTAX COLORS */
+    .jk  { color: #89ddff; }   /* key    */
+    .js  { color: #c3e88d; }   /* string */
+    .jn  { color: #f78c6c; }   /* number */
+    .jb  { color: #c792ea; }   /* bool   */
+    .jl  { color: #3d4f62; }   /* null   */
+
+    /* ================================================================
+       ANIMATIONS
+    ================================================================ */
+    @keyframes shimmer {
+      from { background-position: -600px 0; }
+      to   { background-position:  600px 0; }
+    }
+    @keyframes spin-anim { to { transform: rotate(360deg); } }
+    @keyframes pulse-dot {
+      0%,100% { opacity: 1; }
+      50%      { opacity: 0.35; }
+    }
+    @keyframes fade-up {
+      from { opacity: 0; transform: translateY(5px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .anim-in { animation: fade-up 0.28s ease-out; }
+
+    /* ================================================================
+       SCROLLBARS
+    ================================================================ */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(99,179,237,0.14); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(99,179,237,0.28); }
+
+    /* ================================================================
+       RESPONSIVE
+    ================================================================ */
+    @media (max-width: 1000px) { .results { grid-template-columns: 1fr; } }
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .main { padding: 20px 16px 52px; }
+      .strip { display: flex; }
+    }
+    @media (max-width: 480px) {
+      .inp-hint { display: none; }
+      #askBtn { padding: 10px 16px; }
+      .hdr-badge span { display: none; }
     }
   </style>
 </head>
 <body>
-  <main>
-    <h1>Neo4j AI Query Engine</h1>
-    <p class="subtitle">Ask your existing graph in natural language.</p>
 
-    <div class="ask-row">
-      <input id="question" type="text" placeholder="Top investors by portfolio size" autocomplete="off">
-      <button id="askButton" type="button">Ask</button>
+<!-- ── Animated graph background ─────────────────────────────── -->
+<canvas id="bg"></canvas>
+
+<!-- ── Header ────────────────────────────────────────────────── -->
+<header class="hdr">
+  <div class="hdr-in">
+    <div class="logo">
+      <!-- Graph node icon -->
+      <svg class="logo-icon" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="lgi" x1="0" y1="0" x2="28" y2="28" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#60a5fa"/>
+            <stop offset="100%" stop-color="#22d3ee"/>
+          </linearGradient>
+        </defs>
+        <!-- Center node -->
+        <circle cx="14" cy="14" r="3.5" fill="url(#lgi)"/>
+        <!-- Satellite nodes -->
+        <circle cx="5"  cy="7"  r="2.5" stroke="url(#lgi)" stroke-width="1.5" fill="none"/>
+        <circle cx="23" cy="7"  r="2.5" stroke="url(#lgi)" stroke-width="1.5" fill="none"/>
+        <circle cx="5"  cy="21" r="2.5" stroke="url(#lgi)" stroke-width="1.5" fill="none"/>
+        <circle cx="23" cy="21" r="2.5" stroke="url(#lgi)" stroke-width="1.5" fill="none"/>
+        <!-- Edges -->
+        <line x1="14" y1="14" x2="7.2" y2="9"   stroke="url(#lgi)" stroke-width="1" opacity="0.55"/>
+        <line x1="14" y1="14" x2="20.8" y2="9"   stroke="url(#lgi)" stroke-width="1" opacity="0.55"/>
+        <line x1="14" y1="14" x2="7.2" y2="19"  stroke="url(#lgi)" stroke-width="1" opacity="0.55"/>
+        <line x1="14" y1="14" x2="20.8" y2="19" stroke="url(#lgi)" stroke-width="1" opacity="0.55"/>
+        <line x1="7.2" y1="9" x2="20.8" y2="9"  stroke="url(#lgi)" stroke-width="0.8" opacity="0.25" stroke-dasharray="3 2"/>
+      </svg>
+      <span class="logo-name">Neo4j AI Query Engine</span>
+    </div>
+    <div class="hdr-badge">
+      <div class="badge-dot"></div>
+      <span>Powered by Neo4j</span>
+    </div>
+  </div>
+</header>
+
+<!-- ── App shell ──────────────────────────────────────────────── -->
+<div class="shell">
+
+  <!-- ── Sidebar ─────────────────────────────────────────────── -->
+  <aside class="sidebar">
+    <div class="sb-section">
+      <span class="sb-label">Quick Questions</span>
+      <ul class="ex-list">
+        <li><button class="ex-btn" onclick="setQ(this)"><span class="ex-arrow">↗</span>Top investors by portfolio size</button></li>
+        <li><button class="ex-btn" onclick="setQ(this)"><span class="ex-arrow">↗</span>Show companies operating in India</button></li>
+        <li><button class="ex-btn" onclick="setQ(this)"><span class="ex-arrow">↗</span>Which funds invested in fintech?</button></li>
+        <li><button class="ex-btn" onclick="setQ(this)"><span class="ex-arrow">↗</span>List all investors and their funds</button></li>
+        <li><button class="ex-btn" onclick="setQ(this)"><span class="ex-arrow">↗</span>Companies in the technology sector</button></li>
+        <li><button class="ex-btn" onclick="setQ(this)"><span class="ex-arrow">↗</span>Who are board members at top companies?</button></li>
+        <li><button class="ex-btn" onclick="setQ(this)"><span class="ex-arrow">↗</span>People who know each other in the graph</button></li>
+        <li><button class="ex-btn" onclick="setQ(this)"><span class="ex-arrow">↗</span>Investors committed to multiple funds</button></li>
+        <li><button class="ex-btn" onclick="setQ(this)"><span class="ex-arrow">↗</span>Top 10 companies by investor count</button></li>
+      </ul>
     </div>
 
-    <section>
-      <h2>Generated Cypher</h2>
-      <pre id="cypher">No query yet.</pre>
-    </section>
+    <div class="sb-divider"></div>
 
-    <section>
-      <h2>Results</h2>
-      <pre id="result">No results yet.</pre>
-    </section>
+    <div class="sb-section">
+      <span class="sb-label">Node Types</span>
+      <div class="sb-schema">
+        <span class="schema-tag">Company</span>
+        <span class="schema-tag">Investor</span>
+        <span class="schema-tag">Fund</span>
+        <span class="schema-tag">Person</span>
+        <span class="schema-tag">Sector</span>
+        <span class="schema-tag">Location</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── Main content ────────────────────────────────────────── -->
+  <main class="main">
+
+    <!-- Mobile strip -->
+    <div class="strip">
+      <button class="s-pill" onclick="setQ(this)">Top investors</button>
+      <button class="s-pill" onclick="setQ(this)">Companies in India</button>
+      <button class="s-pill" onclick="setQ(this)">Fintech funds</button>
+      <button class="s-pill" onclick="setQ(this)">Board members</button>
+      <button class="s-pill" onclick="setQ(this)">Tech sector companies</button>
+      <button class="s-pill" onclick="setQ(this)">Investor fund commits</button>
+    </div>
+
+    <!-- Input card -->
+    <div class="input-card">
+      <p class="inp-label">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+        </svg>
+        Ask your graph a question in natural language
+      </p>
+      <textarea
+        id="question"
+        placeholder="e.g. Top investors by portfolio size, Show companies in fintech sector…"
+        autocomplete="off"
+        spellcheck="false"
+        rows="3"
+      ></textarea>
+      <div class="inp-foot">
+        <span class="inp-hint">
+          <kbd>Enter</kbd> to submit &nbsp;·&nbsp; <kbd>Shift+Enter</kbd> for new line
+        </span>
+        <button id="askBtn" type="button">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+          Ask
+        </button>
+      </div>
+    </div>
+
+    <!-- Result cards -->
+    <div class="results">
+
+      <!-- Cypher card -->
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-title">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
+            </svg>
+            Generated Cypher
+          </div>
+          <div class="card-acts">
+            <span class="status" id="cypherSt"></span>
+            <button class="copy-btn" id="copyCypher" onclick="copyRaw('cypher',this)">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>
+              Copy
+            </button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="shim-wrap" id="shimC">
+            <div class="shim-line" style="width:88%"></div>
+            <div class="shim-line" style="width:68%"></div>
+            <div class="shim-line" style="width:78%"></div>
+            <div class="shim-line" style="width:55%"></div>
+          </div>
+          <pre class="cb" id="cypherOut"><span class="placeholder">No query generated yet.</span></pre>
+        </div>
+      </div>
+
+      <!-- Results card -->
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-title">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+            Results
+          </div>
+          <div class="card-acts">
+            <span class="status" id="resultSt"></span>
+            <button class="copy-btn" id="copyResult" onclick="copyRaw('result',this)">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>
+              Copy
+            </button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="shim-wrap" id="shimR">
+            <div class="shim-line" style="width:92%"></div>
+            <div class="shim-line" style="width:76%"></div>
+            <div class="shim-line" style="width:84%"></div>
+            <div class="shim-line" style="width:62%"></div>
+            <div class="shim-line" style="width:55%"></div>
+          </div>
+          <pre class="cb" id="resultOut"><span class="placeholder">No results yet.</span></pre>
+        </div>
+      </div>
+
+    </div><!-- /results -->
   </main>
+</div><!-- /shell -->
 
-  <script>
-    const questionInput = document.getElementById("question");
-    const askButton = document.getElementById("askButton");
-    const cypherOutput = document.getElementById("cypher");
-    const resultOutput = document.getElementById("result");
+<script>
+/* ================================================================
+   ANIMATED BACKGROUND — floating graph network
+================================================================ */
+(function () {
+  const canvas = document.getElementById('bg');
+  const ctx    = canvas.getContext('2d');
+  const COUNT  = 30;
+  const DIST   = 175;
+  let nodes = [];
 
-    async function askQuestion() {
-      const question = questionInput.value.trim();
-      if (!question) {
-        questionInput.focus();
-        return;
-      }
+  function resize() {
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
 
-      askButton.disabled = true;
-      askButton.textContent = "Asking";
-      cypherOutput.textContent = "Generating Cypher...";
-      resultOutput.textContent = "Waiting for Neo4j results...";
-      resultOutput.classList.remove("error");
+  function init() {
+    resize();
+    nodes = Array.from({ length: COUNT }, () => ({
+      x:  Math.random() * canvas.width,
+      y:  Math.random() * canvas.height,
+      vx: (Math.random() - 0.5) * 0.25,
+      vy: (Math.random() - 0.5) * 0.25,
+      r:  1.4 + Math.random() * 1.6,
+    }));
+  }
 
-      try {
-        const response = await fetch(`/ask?question=${encodeURIComponent(question)}`);
-        const data = await response.json();
+  function frame() {
+    requestAnimationFrame(frame);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        if (!response.ok) {
-          throw new Error(data.detail || "Request failed");
+    nodes.forEach(n => {
+      n.x += n.vx;
+      n.y += n.vy;
+      if (n.x < 0 || n.x > canvas.width)  n.vx *= -1;
+      if (n.y < 0 || n.y > canvas.height) n.vy *= -1;
+    });
+
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i + 1; j < nodes.length; j++) {
+        const dx = nodes[i].x - nodes[j].x;
+        const dy = nodes[i].y - nodes[j].y;
+        const d  = Math.sqrt(dx * dx + dy * dy);
+        if (d < DIST) {
+          ctx.beginPath();
+          ctx.moveTo(nodes[i].x, nodes[i].y);
+          ctx.lineTo(nodes[j].x, nodes[j].y);
+          ctx.strokeStyle = `rgba(99,179,237,${(1 - d / DIST) * 0.1})`;
+          ctx.lineWidth   = 1;
+          ctx.stroke();
         }
+      }
+      ctx.beginPath();
+      ctx.arc(nodes[i].x, nodes[i].y, nodes[i].r, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(99,179,237,0.18)';
+      ctx.fill();
+    }
+  }
 
-        cypherOutput.textContent = data.cypher;
-        resultOutput.textContent = JSON.stringify(data.result, null, 2);
-      } catch (error) {
-        cypherOutput.textContent = "No safe Cypher executed.";
-        resultOutput.textContent = error.message;
-        resultOutput.classList.add("error");
-      } finally {
-        askButton.disabled = false;
-        askButton.textContent = "Ask";
+  init();
+  frame();
+  window.addEventListener('resize', resize);
+})();
+
+/* ================================================================
+   EXAMPLE QUESTIONS — click to populate
+================================================================ */
+function setQ(btn) {
+  const text = btn.innerText.replace(/^↗\s*/, '').trim();
+  const ta   = document.getElementById('question');
+  ta.value   = text;
+  autoResize(ta);
+  ta.focus();
+}
+
+/* ================================================================
+   TEXTAREA AUTO-RESIZE
+================================================================ */
+function autoResize(ta) {
+  ta.style.height = 'auto';
+  ta.style.height = Math.min(ta.scrollHeight, 220) + 'px';
+}
+document.getElementById('question').addEventListener('input', function () {
+  autoResize(this);
+});
+
+/* ================================================================
+   RAW CONTENT STORE (for clipboard copy)
+================================================================ */
+const raw = { cypher: '', result: '' };
+
+/* ================================================================
+   CYPHER SYNTAX HIGHLIGHTER
+================================================================ */
+function hlCypher(code) {
+  const KEYWORDS = [
+    'OPTIONAL MATCH','STARTS WITH','ENDS WITH','ORDER BY','DETACH DELETE',
+    'UNION ALL','MATCH','WHERE','RETURN','WITH','LIMIT','SKIP','CREATE',
+    'DELETE','SET','REMOVE','MERGE','UNWIND','CALL','YIELD','DISTINCT',
+    'AS','ASC','DESC','COLLECT','NOT','AND','OR','XOR','IN','IS',
+    'NULL','TRUE','FALSE','CONTAINS','CASE','WHEN','THEN','ELSE','END',
+    'UNION','ALL','FOREACH','ON','COUNT','SUM','AVG','MIN','MAX','KEYS',
+    'LABELS','TYPE','EXISTS','COALESCE','HEAD','TAIL','LAST','SIZE',
+    'LENGTH','NODES','RELATIONSHIPS','RANGE','REDUCE','ANY','NONE','SINGLE',
+  ].sort((a, b) => b.length - a.length);
+
+  const esc = s =>
+    s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+  const toks = [];
+  let i = 0;
+  const s = code;
+
+  while (i < s.length) {
+    // Line comment
+    if (s[i] === '/' && s[i + 1] === '/') {
+      let j = i;
+      while (j < s.length && s[j] !== '\n') j++;
+      toks.push({ t: 'cc', v: s.slice(i, j) }); i = j; continue;
+    }
+    // Single-quote string
+    if (s[i] === "'") {
+      let j = i + 1;
+      while (j < s.length && s[j] !== "'") { if (s[j] === '\\') j++; j++; }
+      toks.push({ t: 'cs', v: s.slice(i, j + 1) }); i = j + 1; continue;
+    }
+    // Double-quote string
+    if (s[i] === '"') {
+      let j = i + 1;
+      while (j < s.length && s[j] !== '"') { if (s[j] === '\\') j++; j++; }
+      toks.push({ t: 'cs', v: s.slice(i, j + 1) }); i = j + 1; continue;
+    }
+    // Keywords (case-insensitive, greedy longer-first)
+    let matched = false;
+    for (const kw of KEYWORDS) {
+      const end   = i + kw.length;
+      const after = s[end];
+      if (s.slice(i, end).toUpperCase() === kw &&
+          (!after || !/[a-zA-Z0-9_]/.test(after))) {
+        toks.push({ t: 'ck', v: s.slice(i, end) }); i = end;
+        matched = true; break;
       }
     }
+    if (matched) continue;
+    // Number
+    if (/[0-9]/.test(s[i])) {
+      let j = i;
+      while (j < s.length && /[0-9.]/.test(s[j])) j++;
+      toks.push({ t: 'cn', v: s.slice(i, j) }); i = j; continue;
+    }
+    // Node/rel label after colon
+    if (s[i] === ':' && /[A-Za-z_]/.test(s[i + 1] || '')) {
+      toks.push({ t: 'x', v: ':' }); i++;
+      let j = i;
+      while (j < s.length && /[A-Za-z0-9_]/.test(s[j])) j++;
+      toks.push({ t: 'cl', v: s.slice(i, j) }); i = j; continue;
+    }
+    // Property after dot
+    if (s[i] === '.' && /[A-Za-z_]/.test(s[i + 1] || '')) {
+      toks.push({ t: 'x', v: '.' }); i++;
+      let j = i;
+      while (j < s.length && /[A-Za-z0-9_]/.test(s[j])) j++;
+      toks.push({ t: 'cp', v: s.slice(i, j) }); i = j; continue;
+    }
+    // Identifier / other word
+    if (/[a-zA-Z_]/.test(s[i])) {
+      let j = i;
+      while (j < s.length && /[A-Za-z0-9_]/.test(s[j])) j++;
+      toks.push({ t: 'x', v: s.slice(i, j) }); i = j; continue;
+    }
+    // Single char passthrough
+    toks.push({ t: 'x', v: s[i] }); i++;
+  }
 
-    askButton.addEventListener("click", askQuestion);
-    questionInput.addEventListener("keydown", (event) => {
-      if (event.key === "Enter") {
-        askQuestion();
-      }
-    });
-  </script>
+  return toks.map(({ t, v }) => {
+    const e = esc(v);
+    return t === 'x' ? e : `<span class="${t}">${e}</span>`;
+  }).join('');
+}
+
+/* ================================================================
+   JSON SYNTAX HIGHLIGHTER
+================================================================ */
+function hlJSON(str) {
+  const esc = s =>
+    s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+  return esc(str).replace(
+    /("(?:\\u[a-fA-F0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?)/g,
+    m => {
+      if (/^"/.test(m))       return /:$/.test(m) ? `<span class="jk">${m}</span>` : `<span class="js">${m}</span>`;
+      if (/true|false/.test(m)) return `<span class="jb">${m}</span>`;
+      if (/null/.test(m))       return `<span class="jl">${m}</span>`;
+      return `<span class="jn">${m}</span>`;
+    }
+  );
+}
+
+/* ================================================================
+   STATUS HELPERS
+================================================================ */
+const ICON_OK  = `<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+const ICON_ERR = `<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
+
+function setStatus(el, type, label) {
+  el.className  = 'status ' + type;
+  el.innerHTML  = (type === 'ok' ? ICON_OK : ICON_ERR) + ' ' + label;
+}
+function clearStatus(el) { el.className = 'status'; el.innerHTML = ''; }
+
+/* ================================================================
+   COPY TO CLIPBOARD
+================================================================ */
+const ICON_COPY = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
+const ICON_CHK  = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+
+function copyRaw(which, btn) {
+  const text = raw[which];
+  if (!text) return;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.classList.add('copied');
+    btn.innerHTML = ICON_CHK + ' Copied!';
+    setTimeout(() => {
+      btn.classList.remove('copied');
+      btn.innerHTML = ICON_COPY + ' Copy';
+    }, 2200);
+  }).catch(() => {});
+}
+
+/* ================================================================
+   SHOW / HIDE SHIMMER
+================================================================ */
+const shimC    = document.getElementById('shimC');
+const shimR    = document.getElementById('shimR');
+const cypherOut = document.getElementById('cypherOut');
+const resultOut = document.getElementById('resultOut');
+
+function showShimmer() {
+  shimC.style.display    = 'flex';
+  cypherOut.style.display = 'none';
+  shimR.style.display    = 'flex';
+  resultOut.style.display = 'none';
+}
+function hideShimmer() {
+  shimC.style.display    = 'none';
+  cypherOut.style.display = '';
+  shimR.style.display    = 'none';
+  resultOut.style.display = '';
+}
+
+/* ================================================================
+   TRIGGER FADE-UP ANIMATION
+================================================================ */
+function animateIn(el) {
+  el.classList.remove('anim-in');
+  void el.offsetWidth; // force reflow
+  el.classList.add('anim-in');
+}
+
+/* ================================================================
+   MAIN ASK LOGIC
+================================================================ */
+const qInput  = document.getElementById('question');
+const askBtn  = document.getElementById('askBtn');
+const cypherSt = document.getElementById('cypherSt');
+const resultSt = document.getElementById('resultSt');
+
+async function ask() {
+  const q = qInput.value.trim();
+  if (!q) { qInput.focus(); return; }
+
+  // ── Loading state
+  askBtn.disabled  = true;
+  askBtn.innerHTML = '<span class="spin"></span> Thinking…';
+  clearStatus(cypherSt);
+  clearStatus(resultSt);
+  showShimmer();
+  raw.cypher = '';
+  raw.result  = '';
+
+  try {
+    const res  = await fetch('/ask?question=' + encodeURIComponent(q));
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Request failed');
+
+    // ── Cypher
+    raw.cypher      = data.cypher || '';
+    hideShimmer();
+    cypherOut.innerHTML = hlCypher(raw.cypher);
+    animateIn(cypherOut);
+    setStatus(cypherSt, 'ok', 'Generated');
+
+    // ── Results
+    const isEmpty  = Array.isArray(data.result) && data.result.length === 0;
+    const rowCount = Array.isArray(data.result)  ? data.result.length   : null;
+    const jsonStr  = isEmpty
+      ? '[]  // No records returned'
+      : JSON.stringify(data.result, null, 2);
+    raw.result      = jsonStr;
+    resultOut.innerHTML = hlJSON(jsonStr);
+    animateIn(resultOut);
+    setStatus(resultSt, 'ok', isEmpty ? 'Empty set' : rowCount + (rowCount === 1 ? ' record' : ' records'));
+
+  } catch (err) {
+    hideShimmer();
+    const safeMsg = String(err.message)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    cypherOut.innerHTML = '<span class="placeholder">No Cypher executed.</span>';
+    resultOut.innerHTML = '<span class="err-txt">' + safeMsg + '</span>';
+    animateIn(resultOut);
+    clearStatus(cypherSt);
+    setStatus(resultSt, 'err', 'Error');
+    raw.result = err.message;
+  } finally {
+    askBtn.disabled  = false;
+    askBtn.innerHTML =
+      `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M5 12h14M12 5l7 7-7 7"/>
+      </svg> Ask`;
+  }
+}
+
+askBtn.addEventListener('click', ask);
+qInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); ask(); }
+});
+</script>
 </body>
 </html>
