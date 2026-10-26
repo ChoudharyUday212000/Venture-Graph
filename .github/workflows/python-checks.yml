@@ -1,4 +1,4 @@
-name: Python syntax and schema checks
+name: Python syntax and safety checks
 
 on:
   push:
@@ -18,9 +18,13 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+      - name: Install test runner
+        run: python -m pip install --upgrade pip pytest
       - name: Compile Python source
-        run: python -m compileall -q app.py main.py ai_query_engine config ingestion models utils validation
+        run: python -m compileall -q app.py main.py ai_query_engine config ingestion models utils validation tests
       - name: Validate graph schema JSON
         run: |
           python -m json.tool data/graph_schema.json > /dev/null
           python -m json.tool ai_query_engine/data/graph_schema.json > /dev/null
+      - name: Test read-only Cypher guard
+        run: python -m pytest -q tests
