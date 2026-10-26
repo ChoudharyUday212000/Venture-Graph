@@ -1,5 +1,7 @@
 # Venture Capital Graph + AI Query Engine
 
+[![Python checks](https://github.com/ChoudharyUday212000/Venture-Graph/actions/workflows/python-checks.yml/badge.svg)](https://github.com/ChoudharyUday212000/Venture-Graph/actions/workflows/python-checks.yml)
+
 A Python and Neo4j project for ingesting venture-capital data as a graph, validating its relationships, and exploring the graph with natural-language questions converted into read-only Cypher queries.
 
 ## What it demonstrates
