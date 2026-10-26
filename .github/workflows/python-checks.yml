@@ -1,0 +1,26 @@
+name: Python syntax and schema checks
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Compile Python source
+        run: python -m compileall -q app.py main.py ai_query_engine config ingestion models utils validation
+      - name: Validate graph schema JSON
+        run: |
+          python -m json.tool data/graph_schema.json > /dev/null
+          python -m json.tool ai_query_engine/data/graph_schema.json > /dev/null
